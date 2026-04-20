@@ -1,0 +1,16 @@
+<%- include('../partials/header') %>
+<div class="admin-header">
+    <span>LOGGED IN AS: <%= user %></span>
+    <nav>
+        <a href="/admin">DASHBOARD</a> | <a href="/admin/posts">POSTS</a> | <a href="/admin/categories">CATEGORIES</a> | <a href="/admin/tags">TAGS</a> | <a href="/admin/pages">PAGES</a> | <a href="/admin/comments">COMMENTS</a> | <a href="/admin/settings">SETTINGS</a> | <a href="/admin/logout">LOGOUT</a>
+    </nav>
+</div>
+<div class="container">
+    <div class="main-content">
+        <div class="dos-box">
+            <div class="dos-title">ADMIN DASHBOARD</div>
+            <p>Welcome to the Retro Blog administration panel.</p>
+        </div>
+    </div>
+</div>
+<%- include('../partials/footer') %>

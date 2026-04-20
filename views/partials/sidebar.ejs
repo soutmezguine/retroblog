@@ -1,0 +1,33 @@
+    <div class="sidebar">
+        <div class="dos-box">
+            <div class="dos-title">SEARCH</div>
+            <form action="/search" method="GET">
+                <input type="text" name="q" placeholder="Search..." style="width: 80%;">
+                <button type="submit">GO</button>
+            </form>
+        </div>
+        <div class="dos-box">
+            <div class="dos-title">CATEGORIES</div>
+            <ul style="list-style: none; padding: 0;">
+                <% categories.forEach(cat => { %>
+                    <li><a href="/category/<%= cat.slug %>">>> <%= cat.name %></a></li>
+                <% }); %>
+            </ul>
+        </div>
+        <div class="dos-box">
+            <div class="dos-title">TAG CLOUD</div>
+            <div class="tag-cloud">
+                <% tags.forEach(tag => { %>
+                    <a href="/tag/<%= tag.slug %>"><%= tag.name %></a>
+                <% }); %>
+            </div>
+        </div>
+        <div class="dos-box">
+            <div class="dos-title">ARCHIVES</div>
+            <ul style="list-style: none; padding: 0;">
+                <% archives.forEach(arch => { %>
+                    <li><a href="/archive/<%= arch.year %>/<%= arch.month %>"><%= arch.month_name %> <%= arch.year %></a></li>
+                <% }); %>
+            </ul>
+        </div>
+    </div>

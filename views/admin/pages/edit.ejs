@@ -1,0 +1,17 @@
+<%- include('../../partials/header') %>
+<div class="admin-header">
+    <span>LOGGED IN AS: <%= user %></span>
+    <nav>
+        <a href="/admin">DASHBOARD</a> | <a href="/admin/posts">POSTS</a> | <a href="/admin/categories">CATEGORIES</a> | <a href="/admin/tags">TAGS</a> | <a href="/admin/pages">PAGES</a> | <a href="/admin/comments">COMMENTS</a> | <a href="/admin/settings">SETTINGS</a> | <a href="/admin/logout">LOGOUT</a>
+    </nav>
+</div>
+<div class="container"><div class="main-content"><div class="dos-box"><div class="dos-title">EDIT PAGE</div>
+<form action="/admin/pages/edit/<%= page.id %>" method="POST">
+    <div><label>TITLE:</label><br><input type="text" name="title" value="<%= page.title %>" required style="width: 100%;"></div>
+    <div><label>SLUG:</label><br><input type="text" name="slug" value="<%= page.slug %>" required style="width: 100%;"></div>
+    <div><label>NAVIGATION ORDER:</label><br><input type="number" name="navigation_order" value="<%= page.navigation_order %>" style="width: 100%;"></div>
+    <div><label>CONTENT (MARKDOWN):</label><br><textarea name="content" required style="width: 100%; height: 300px;"><%= page.content %></textarea></div>
+    <button type="submit">UPDATE PAGE</button>
+</form>
+</div></div></div>
+<%- include('../../partials/footer') %>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Blog</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        :root {
+            --bg-color: <%= settings.bg_color || '#0000AA' %>;
+            --text-color: <%= settings.text_color || '#AAAAAA' %>;
+            --border-color: <%= settings.border_color || '#FFFFFF' %>;
+            --highlight-color: <%= settings.highlight_color || '#FFFF55' %>;
+            --shadow-color: <%= settings.shadow_color || '#000000' %>;
+        }
+    </style>
+</head>
+<body>
+    <div class="dos-box">
+        <div class="dos-title">MENU</div>
+        <ul class="nav-menu">
+            <li><a href="/">HOME</a></li>
+            <% pages.forEach(page => { %>
+                <li><a href="/page/<%= page.slug %>"><%= page.title.toUpperCase() %></a></li>
+            <% }); %>
+            <li><a href="/admin">ADMIN</a></li>
+        </ul>
+    </div>

@@ -1,0 +1,19 @@
+<%- include('partials/header') %>
+<div class="container">
+    <div class="main-content">
+        <div class="dos-box">
+            <div class="dos-title"><%= title %></div>
+            <% if (posts.length === 0) { %><p>No posts found.</p><% } %>
+            <% posts.forEach(post => { %>
+                <div style="margin-bottom: 40px; border-bottom: 2px solid var(--border-color); padding-bottom: 20px;">
+                    <h2><a href="/post/<%= post.slug %>"><%= post.title %></a></h2>
+                    <div class="post-meta">DATE: <%= post.created_at %></div>
+                    <p><%= post.summary %></p>
+                    <a href="/post/<%= post.slug %>">[READ MORE]</a>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+    <%- include('partials/sidebar') %>
+</div>
+<%- include('partials/footer') %>

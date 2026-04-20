@@ -1,0 +1,11 @@
+<%- include('partials/header') %>
+<div class="container">
+    <div class="main-content">
+        <div class="dos-box">
+            <div class="dos-title"><%= page.title.toUpperCase() %></div>
+            <div class="post-content"><%- page.renderedContent %></div>
+        </div>
+    </div>
+    <%- include('partials/sidebar') %>
+</div>
+<%- include('partials/footer') %>

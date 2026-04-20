@@ -1,0 +1,19 @@
+<%- include('../partials/header') %>
+<div class="admin-header">
+    <span>LOGGED IN AS: <%= user %></span>
+    <nav>
+        <a href="/admin">DASHBOARD</a> | <a href="/admin/posts">POSTS</a> | <a href="/admin/categories">CATEGORIES</a> | <a href="/admin/tags">TAGS</a> | <a href="/admin/pages">PAGES</a> | <a href="/admin/comments">COMMENTS</a> | <a href="/admin/settings">SETTINGS</a> | <a href="/admin/logout">LOGOUT</a>
+    </nav>
+</div>
+<div class="container"><div class="main-content"><div class="dos-box"><div class="dos-title">MANAGE TAGS</div>
+<form action="/admin/tags" method="POST"><input type="text" name="name" placeholder="Name" required><input type="text" name="slug" placeholder="Slug" required><button type="submit">ADD</button></form>
+<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <thead><tr style="background-color: var(--text-color); color: var(--bg-color);"><th style="padding: 5px; text-align: left;">NAME</th><th style="padding: 5px; text-align: left;">SLUG</th><th style="padding: 5px; text-align: left;">ACTIONS</th></tr></thead>
+    <tbody>
+        <% tags.forEach(tag => { %>
+            <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 5px;"><%= tag.name %></td><td style="padding: 5px;"><%= tag.slug %></td><td style="padding: 5px;"><form action="/admin/tags/delete/<%= tag.id %>" method="POST" style="display: inline;"><button type="submit" style="color: red;">[DELETE]</button></form></td></tr>
+        <% }); %>
+    </tbody>
+</table>
+</div></div></div>
+<%- include('../partials/footer') %>

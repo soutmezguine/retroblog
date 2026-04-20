@@ -1,0 +1,30 @@
+<%- include('../../partials/header') %>
+<div class="admin-header">
+    <span>LOGGED IN AS: <%= user %></span>
+    <nav>
+        <a href="/admin">DASHBOARD</a> | <a href="/admin/posts">POSTS</a> | <a href="/admin/categories">CATEGORIES</a> | <a href="/admin/tags">TAGS</a> | <a href="/admin/pages">PAGES</a> | <a href="/admin/comments">COMMENTS</a> | <a href="/admin/settings">SETTINGS</a> | <a href="/admin/logout">LOGOUT</a>
+    </nav>
+</div>
+<div class="container">
+    <div class="main-content">
+        <div class="dos-box">
+            <div class="dos-title">MANAGE POSTS</div>
+            <a href="/admin/posts/create">[CREATE NEW POST]</a>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <thead><tr style="background-color: var(--text-color); color: var(--bg-color);"><th style="padding: 5px; text-align: left;">TITLE</th><th style="padding: 5px; text-align: left;">CATEGORY</th><th style="padding: 5px; text-align: left;">DATE</th><th style="padding: 5px; text-align: left;">ACTIONS</th></tr></thead>
+                <tbody>
+                    <% posts.forEach(post => { %>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 5px;"><%= post.title %></td><td style="padding: 5px;"><%= post.category_name || 'N/A' %></td><td style="padding: 5px;"><%= post.created_at %></td>
+                            <td style="padding: 5px;">
+                                <a href="/admin/posts/edit/<%= post.id %>">[EDIT]</a>
+                                <form action="/admin/posts/delete/<%= post.id %>" method="POST" style="display: inline;"><button type="submit" style="color: red;">[DELETE]</button></form>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<%- include('../../partials/footer') %>

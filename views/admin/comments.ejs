@@ -1,0 +1,19 @@
+<%- include('../partials/header') %>
+<div class="admin-header">
+    <span>LOGGED IN AS: <%= user %></span>
+    <nav>
+        <a href="/admin">DASHBOARD</a> | <a href="/admin/posts">POSTS</a> | <a href="/admin/categories">CATEGORIES</a> | <a href="/admin/tags">TAGS</a> | <a href="/admin/pages">PAGES</a> | <a href="/admin/comments">COMMENTS</a> | <a href="/admin/settings">SETTINGS</a> | <a href="/admin/logout">LOGOUT</a>
+    </nav>
+</div>
+<div class="container"><div class="main-content"><div class="dos-box"><div class="dos-title">MANAGE COMMENTS</div>
+<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <thead><tr style="background-color: var(--text-color); color: var(--bg-color);"><th style="padding: 5px; text-align: left;">AUTHOR</th><th style="padding: 5px; text-align: left;">POST</th><th style="padding: 5px; text-align: left;">CONTENT</th><th style="padding: 5px; text-align: left;">STATUS</th><th style="padding: 5px; text-align: left;">ACTIONS</th></tr></thead>
+    <tbody>
+        <% comments.forEach(c => { %>
+            <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 5px;"><%= c.author %></td><td style="padding: 5px;"><%= c.post_title %></td><td style="padding: 5px;"><%= c.content %></td><td style="padding: 5px;"><%= c.status %></td>
+            <td style="padding: 5px;"><form action="/admin/comments/approve/<%= c.id %>" method="POST" style="display: inline;"><button type="submit" style="color: lime;">[OK]</button></form><form action="/admin/comments/deny/<%= c.id %>" method="POST" style="display: inline;"><button type="submit" style="color: orange;">[NO]</button></form><form action="/admin/comments/delete/<%= c.id %>" method="POST" style="display: inline;"><button type="submit" style="color: red;">[X]</button></form></td></tr>
+        <% }); %>
+    </tbody>
+</table>
+</div></div></div>
+<%- include('../partials/footer') %>

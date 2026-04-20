@@ -1,0 +1,13 @@
+<%- include('../partials/header') %>
+<div class="container" style="justify-content: center;">
+    <div class="dos-box" style="width: 400px; margin-top: 50px;">
+        <div class="dos-title">ADMIN LOGIN</div>
+        <% if (error) { %><p style="color: red; text-align: center;"><%= error %></p><% } %>
+        <form action="/admin/login" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+            <div><label>USERNAME:</label><br><input type="text" name="username" required style="width: 100%;"></div>
+            <div><label>PASSWORD:</label><br><input type="password" name="password" required style="width: 100%;"></div>
+            <button type="submit">LOGIN</button>
+        </form>
+    </div>
+</div>
+<%- include('../partials/footer') %>

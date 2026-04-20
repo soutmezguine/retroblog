@@ -1,0 +1,55 @@
+<%- include('../partials/header') %>
+<div class="admin-header">
+    <span>LOGGED IN AS: <%= user %></span>
+    <nav>
+        <a href="/admin">DASHBOARD</a> | <a href="/admin/posts">POSTS</a> | <a href="/admin/categories">CATEGORIES</a> | <a href="/admin/tags">TAGS</a> | <a href="/admin/pages">PAGES</a> | <a href="/admin/comments">COMMENTS</a> | <a href="/admin/settings">SETTINGS</a> | <a href="/admin/logout">LOGOUT</a>
+    </nav>
+</div>
+<div class="container">
+    <div class="main-content">
+        <div class="dos-box">
+            <div class="dos-title">THEME SETTINGS</div>
+            <form action="/admin/settings/theme" method="POST">
+                <% for(const key in settings) { %>
+                    <div style="margin-bottom: 10px;">
+                        <label><%= key.toUpperCase() %>:</label><br>
+                        <input type="text" name="<%= key %>" value="<%= settings[key] %>">
+                    </div>
+                <% } %>
+                <button type="submit">UPDATE THEME</button>
+            </form>
+        </div>
+        <div class="dos-box">
+            <div class="dos-title">BLOCKING</div>
+            <form action="/admin/settings/ip-block" method="POST" style="margin-bottom: 20px;">
+                <input type="text" name="ip" placeholder="IP Address">
+                <input type="text" name="country_code" placeholder="Country Code (e.g. US)">
+                <input type="text" name="reason" placeholder="Reason">
+                <button type="submit">BLOCK</button>
+            </form>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: var(--text-color); color: var(--bg-color);">
+                        <th style="padding: 5px; text-align: left;">IP / CC</th>
+                        <th style="padding: 5px; text-align: left;">REASON</th>
+                        <th style="padding: 5px; text-align: left;">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% blocked_ips.forEach(b => { %>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 5px;"><%= b.ip || b.country_code %></td>
+                            <td style="padding: 5px;"><%= b.reason %></td>
+                            <td style="padding: 5px;">
+                                <form action="/admin/settings/ip-unblock/<%= b.id %>" method="POST" style="display: inline;">
+                                    <button type="submit" style="padding: 0; background: none; border: none; color: red; font-weight: normal; cursor: pointer;">[UNBLOCK]</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<%- include('../partials/footer') %>

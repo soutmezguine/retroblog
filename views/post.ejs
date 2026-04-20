@@ -1,0 +1,36 @@
+<%- include('partials/header') %>
+<div class="container">
+    <div class="main-content">
+        <div class="dos-box">
+            <div class="dos-title">POST VIEW</div>
+            <h1><%= post.title %></h1>
+            <div class="post-meta">
+                DATE: <%= post.created_at %> |
+                CATEGORY: <a href="/category/<%= post.category_slug %>"><%= post.category_name || 'NONE' %></a>
+            </div>
+            <div class="post-content"><%- post.renderedContent %></div>
+            <div style="margin-top: 30px;">
+                <strong>TAGS:</strong>
+                <% postTags.forEach(tag => { %><a href="/tag/<%= tag.slug %>" style="border: 1px solid var(--border-color); padding: 2px 5px; margin-right: 5px;"><%= tag.name %></a><% }); %>
+            </div>
+        </div>
+        <div class="dos-box">
+            <div class="dos-title">COMMENTS</div>
+            <% comments.forEach(comment => { %>
+                <div style="border-bottom: 1px dashed var(--border-color); padding: 10px 0;">
+                    <strong><%= comment.author %></strong> says:<br><p><%= comment.content %></p><small>On <%= comment.created_at %></small>
+                </div>
+            <% }); %>
+            <div style="margin-top: 20px;">
+                <h3>LEAVE A COMMENT</h3>
+                <form action="/post/<%= post.id %>/comment" method="POST" style="display: flex; flex-direction: column; gap: 10px;">
+                    <input type="text" name="author" placeholder="Your Name" required>
+                    <textarea name="content" placeholder="Your Comment" required style="height: 100px;"></textarea>
+                    <button type="submit" style="width: fit-content;">SUBMIT COMMENT</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <%- include('partials/sidebar') %>
+</div>
+<%- include('partials/footer') %>
