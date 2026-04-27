@@ -18,11 +18,46 @@ router.get('/', isAuthenticated, (req, res) => {
 });
 
 router.get('/create', isAuthenticated, (req, res) => {
-    res.render('admin/posts/create', { ...getCommonData(), user: req.session.username });
+    const draftId = req.query.draft_id;
+    let draft = null;
+    if (draftId) {
+        draft = db.prepare('SELECT * FROM drafts WHERE id = ? AND type = ?').get(draftId, 'post');
+    }
+    const drafts = db.prepare('SELECT * FROM drafts WHERE type = ? ORDER BY updated_at DESC').all('post');
+    const draftTags = draft && draft.tag_ids ? draft.tag_ids.split(',').filter(Boolean) : [];
+    res.render('admin/posts/create', { ...getCommonData(), user: req.session.username, draft, drafts, draftTags });
+});
+
+router.post('/draft', isAuthenticated, (req, res) => {
+    const { draft_id, title, slug, content, summary, category_id, tags, new_tags } = req.body;
+    const tag_ids = tags ? (Array.isArray(tags) ? tags.join(',') : tags) : '';
+    const now = new Date().toISOString();
+    if (draft_id) {
+        db.prepare(`UPDATE drafts SET title = ?, slug = ?, content = ?, summary = ?, category_id = ?, tag_ids = ?, new_tags = ?, updated_at = ? WHERE id = ?`).run(
+            title || '',
+            slug || '',
+            content || '',
+            summary || '',
+            category_id || null,
+            tag_ids,
+            new_tags || '',
+            now,
+            draft_id
+        );
+        return res.json({ status: 'ok', id: draft_id });
+    }
+    const info = db.prepare(`INSERT INTO drafts (type, title, slug, content, summary, category_id, tag_ids, new_tags, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+        .run('post', title || '', slug || '', content || '', summary || '', category_id || null, tag_ids, new_tags || '', now);
+    res.json({ status: 'ok', id: info.lastInsertRowid });
+});
+
+router.post('/draft/delete/:id', isAuthenticated, (req, res) => {
+    db.prepare('DELETE FROM drafts WHERE id = ?').run(req.params.id);
+    res.redirect('/admin/posts/create');
 });
 
 router.post('/create', isAuthenticated, upload.single('image'), (req, res) => {
-    const { title, slug, content, summary, category_id, tags, new_tags } = req.body;
+    const { title, slug, content, summary, category_id, tags, new_tags, draft_id } = req.body;
     let finalContent = content;
     if (req.file) finalContent = `![Image](/uploads/${req.file.filename})\n\n${content}`;
     const info = db.prepare('INSERT INTO posts (title, slug, content, summary, category_id) VALUES (?, ?, ?, ?, ?)').run(title, slug, finalContent, summary, category_id || null);
@@ -44,6 +79,9 @@ router.post('/create', isAuthenticated, upload.single('image'), (req, res) => {
     }
     const insertTag = db.prepare('INSERT INTO post_tags (post_id, tag_id) VALUES (?, ?)');
     tagList.forEach(tagId => insertTag.run(postId, tagId));
+    if (draft_id) {
+        db.prepare('DELETE FROM drafts WHERE id = ?').run(draft_id);
+    }
     res.redirect('/admin/posts');
 });
 

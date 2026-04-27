@@ -1,0 +1,54 @@
+<%- include('../partials/header') %>
+<div class="admin-header">
+    <span>LOGGED IN AS: <%= user %></span>
+    <nav>
+        <a href="/admin">DASHBOARD</a> | <a href="/admin/posts">POSTS</a> | <a href="/admin/categories">CATEGORIES</a> | <a href="/admin/tags">TAGS</a> | <a href="/admin/pages">PAGES</a> | <a href="/admin/drafts">DRAFTS</a> | <a href="/admin/comments">COMMENTS</a> | <a href="/admin/settings">SETTINGS</a> | <a href="/admin/logout">LOGOUT</a>
+    </nav>
+</div>
+<div class="container">
+    <div class="main-content">
+        <div class="dos-box">
+            <div class="dos-title">DRAFTS</div>
+            <% if (drafts && drafts.length) { %>
+                <table style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: var(--text-color); color: var(--bg-color);">
+                            <th style="padding: 8px; text-align:left;">TYPE</th>
+                            <th style="padding: 8px; text-align:left;">TITLE</th>
+                            <th style="padding: 8px; text-align:left;">UPDATED</th>
+                            <th style="padding: 8px; text-align:left;">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% drafts.forEach(draft => { %>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 8px;"><%= draft.type.toUpperCase() %></td>
+                                <td style="padding: 8px;"><%= draft.title || 'Untitled draft' %></td>
+                                <td style="padding: 8px;"><%= new Date(draft.updated_at).toLocaleString() %></td>
+                                <td style="padding: 8px;">
+                                    <% if (draft.type === 'post') { %>
+                                        <a href="/admin/posts/create?draft_id=<%= draft.id %>">Load post draft</a>
+                                        <form action="/admin/drafts/publish/<%= draft.id %>" method="POST" onsubmit="return confirm('Publish this post draft?');" style="display:inline; margin-left: 10px;">
+                                            <button type="submit">Publish</button>
+                                        </form>
+                                    <% } else if (draft.type === 'page') { %>
+                                        <a href="/admin/pages/create?draft_id=<%= draft.id %>">Load page draft</a>
+                                        <form action="/admin/drafts/publish/<%= draft.id %>" method="POST" onsubmit="return confirm('Publish this page draft?');" style="display:inline; margin-left: 10px;">
+                                            <button type="submit">Publish</button>
+                                        </form>
+                                    <% } %>
+                                    <form action="/admin/drafts/delete/<%= draft.id %>" method="POST" style="display:inline; margin-left: 10px;">
+                                        <button type="submit">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <p>No drafts saved yet.</p>
+            <% } %>
+        </div>
+    </div>
+</div>
+<%- include('../partials/footer') %>

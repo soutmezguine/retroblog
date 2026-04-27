@@ -9,12 +9,45 @@ router.get('/', isAuthenticated, (req, res) => {
 });
 
 router.get('/create', isAuthenticated, (req, res) => {
-    res.render('admin/pages/create', { ...getCommonData(), user: req.session.username });
+    const draftId = req.query.draft_id;
+    let draft = null;
+    if (draftId) {
+        draft = db.prepare('SELECT * FROM drafts WHERE id = ? AND type = ?').get(draftId, 'page');
+    }
+    const drafts = db.prepare('SELECT * FROM drafts WHERE type = ? ORDER BY updated_at DESC').all('page');
+    res.render('admin/pages/create', { ...getCommonData(), user: req.session.username, draft, drafts });
+});
+
+router.post('/draft', isAuthenticated, (req, res) => {
+    const { draft_id, title, slug, content, navigation_order } = req.body;
+    const now = new Date().toISOString();
+    if (draft_id) {
+        db.prepare(`UPDATE drafts SET title = ?, slug = ?, content = ?, navigation_order = ?, updated_at = ? WHERE id = ?`).run(
+            title || '',
+            slug || '',
+            content || '',
+            navigation_order || 0,
+            now,
+            draft_id
+        );
+        return res.json({ status: 'ok', id: draft_id });
+    }
+    const info = db.prepare(`INSERT INTO drafts (type, title, slug, content, navigation_order, updated_at) VALUES (?, ?, ?, ?, ?, ?)`)
+        .run('page', title || '', slug || '', content || '', navigation_order || 0, now);
+    res.json({ status: 'ok', id: info.lastInsertRowid });
+});
+
+router.post('/draft/delete/:id', isAuthenticated, (req, res) => {
+    db.prepare('DELETE FROM drafts WHERE id = ?').run(req.params.id);
+    res.redirect('/admin/pages/create');
 });
 
 router.post('/create', isAuthenticated, (req, res) => {
-    const { title, slug, content, navigation_order } = req.body;
+    const { title, slug, content, navigation_order, draft_id } = req.body;
     db.prepare('INSERT INTO pages (title, slug, content, navigation_order) VALUES (?, ?, ?, ?)').run(title, slug, content, navigation_order || 0);
+    if (draft_id) {
+        db.prepare('DELETE FROM drafts WHERE id = ?').run(draft_id);
+    }
     res.redirect('/admin/pages');
 });
 

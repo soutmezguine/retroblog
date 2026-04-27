@@ -17,13 +17,16 @@
     </style>
 </head>
 <body>
-    <div class="dos-box">
-        <div class="dos-title">MENU</div>
+    <div class="site-wrapper">
+        <div class="dos-box">
+            <div class="dos-title">MENU</div>
         <ul class="nav-menu">
             <li><a href="/">HOME</a></li>
             <% pages.forEach(page => { %>
                 <li><a href="/page/<%= page.slug %>"><%= page.title.toUpperCase() %></a></li>
             <% }); %>
-            <li><a href="/admin">ADMIN</a></li>
+            <% if (!settings.hide_admin_link || settings.hide_admin_link === 'false') { %>
+                <li><a href="/admin">ADMIN</a></li>
+            <% } %>
         </ul>
     </div>

@@ -2,20 +2,107 @@
 <div class="admin-header">
     <span>LOGGED IN AS: <%= user %></span>
     <nav>
-        <a href="/admin">DASHBOARD</a> | <a href="/admin/posts">POSTS</a> | <a href="/admin/categories">CATEGORIES</a> | <a href="/admin/tags">TAGS</a> | <a href="/admin/pages">PAGES</a> | <a href="/admin/comments">COMMENTS</a> | <a href="/admin/settings">SETTINGS</a> | <a href="/admin/logout">LOGOUT</a>
+        <a href="/admin">DASHBOARD</a> | <a href="/admin/posts">POSTS</a> | <a href="/admin/categories">CATEGORIES</a> | <a href="/admin/tags">TAGS</a> | <a href="/admin/pages">PAGES</a> | <a href="/admin/drafts">DRAFTS</a> | <a href="/admin/comments">COMMENTS</a> | <a href="/admin/settings">SETTINGS</a> | <a href="/admin/logout">LOGOUT</a>
     </nav>
 </div>
 <div class="container"><div class="main-content"><div class="dos-box"><div class="dos-title">CREATE POST</div>
-<form action="/admin/posts/create" method="POST" enctype="multipart/form-data">
-    <div><label>TITLE:</label><br><input type="text" name="title" required style="width: 100%;"></div>
-    <div><label>SLUG:</label><br><input type="text" name="slug" required style="width: 100%;"></div>
-    <div><label>CATEGORY:</label><br><select name="category_id" style="width: 100%;"><option value="">None</option><% categories.forEach(cat => { %><option value="<%= cat.id %>"><%= cat.name %></option><% }); %></select></div>
-    <div><label>SUMMARY:</label><br><textarea name="summary" style="width: 100%; height: 60px;"></textarea></div>
-    <div><label>CONTENT (MARKDOWN):</label><br><textarea name="content" required style="width: 100%; height: 300px;"></textarea></div>
+<div class="draft-panel">
+    <h3>Saved Drafts</h3>
+    <% if (drafts && drafts.length) { %>
+        <ul class="draft-list">
+            <% drafts.forEach(d => { %>
+                <li>
+                    <strong><%= d.title || 'Untitled draft' %></strong> — updated <%= new Date(d.updated_at).toLocaleString() %>
+                    <div class="draft-actions">
+                        <a href="/admin/posts/create?draft_id=<%= d.id %>">Load</a>
+                        <form action="/admin/posts/draft/delete/<%= d.id %>" method="POST" style="display:inline;">
+                            <button type="submit">Delete</button>
+                        </form>
+                    </div>
+                </li>
+            <% }); %>
+        </ul>
+    <% } else { %>
+        <p>No saved drafts yet.</p>
+    <% } %>
+</div>
+<form id="post-form" action="/admin/posts/create" method="POST" enctype="multipart/form-data" data-changed="false">
+    <input type="hidden" id="draft_id" name="draft_id" value="<%= draft ? draft.id : '' %>">
+    <div><label>TITLE:</label><br><input type="text" name="title" required style="width: 100%;" value="<%= draft ? draft.title : '' %>"></div>
+    <div><label>SLUG:</label><br><input type="text" name="slug" required style="width: 100%;" value="<%= draft ? draft.slug : '' %>"></div>
+    <div><label>CATEGORY:</label><br><select name="category_id" style="width: 100%;"><option value="">None</option><% categories.forEach(cat => { %><option value="<%= cat.id %>" <%= draft && draft.category_id == cat.id ? 'selected' : '' %>><%= cat.name %></option><% }); %></select></div>
+    <div><label>SUMMARY:</label><br><textarea name="summary" style="width: 100%; height: 60px;"><%= draft ? draft.summary : '' %></textarea></div>
+    <div><label>CONTENT (MARKDOWN):</label><br><textarea name="content" required style="width: 100%; height: 300px;"><%= draft ? draft.content : '' %></textarea></div>
     <div><label>IMAGE:</label><br><input type="file" name="image"></div>
-    <div><label>TAGS:</label><br><% tags.forEach(tag => { %><label><input type="checkbox" name="tags" value="<%= tag.id %>"> <%= tag.name %></label><% }); %></div>
-    <div><label>NEW TAGS (comma separated):</label><br><input type="text" name="new_tags" style="width: 100%;"></div>
-    <button type="submit">SAVE POST</button>
+    <div><label>TAGS:</label><br><% tags.forEach(tag => { %><label><input type="checkbox" name="tags" value="<%= tag.id %>" <%= draft && draftTags.includes(tag.id.toString()) ? 'checked' : '' %>> <%= tag.name %></label><% }); %></div>
+    <div><label>NEW TAGS (comma separated):</label><br><input type="text" name="new_tags" style="width: 100%;" value="<%= draft ? draft.new_tags : '' %>"></div>
+    <div style="margin-top: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <button type="submit">SAVE POST</button>
+        <button type="button" id="save-draft-button">SAVE DRAFT</button>
+        <span id="draft-save-status" style="color: var(--highlight-color);"></span>
+    </div>
 </form>
 </div></div></div>
+<script>
+(function() {
+    const form = document.getElementById('post-form');
+    const draftIdInput = document.getElementById('draft_id');
+    const status = document.getElementById('draft-save-status');
+    const saveButton = document.getElementById('save-draft-button');
+    const endpoint = '/admin/posts/draft';
+    const interval = 300000;
+
+    function getDraftPayload() {
+        return {
+            draft_id: draftIdInput.value,
+            title: form.title.value,
+            slug: form.slug.value,
+            content: form.content.value,
+            summary: form.summary.value,
+            category_id: form.category_id.value,
+            tags: Array.from(form.querySelectorAll('input[name="tags"]:checked')).map(el => el.value),
+            new_tags: form.new_tags.value
+        };
+    }
+
+    async function saveDraft(auto = false) {
+        const payload = getDraftPayload();
+        const title = payload.title || '';
+        const content = payload.content || '';
+        if (!title.trim() && !content.trim()) {
+            if (!auto) status.textContent = 'Enter title or content to save a draft.';
+            return;
+        }
+        status.textContent = auto ? 'Autosaving draft...' : 'Saving draft...';
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            if (result.status === 'ok') {
+                draftIdInput.value = result.id;
+                form.dataset.changed = 'false';
+                status.textContent = auto ? 'Draft autosaved.' : 'Draft saved.';
+            } else {
+                status.textContent = 'Draft save failed.';
+            }
+        } catch (err) {
+            status.textContent = 'Draft save failed.';
+        }
+        setTimeout(() => { if (status.textContent.includes('saved')) status.textContent = ''; }, 4000);
+    }
+
+    saveButton.addEventListener('click', () => saveDraft(false));
+    form.addEventListener('input', () => form.dataset.changed = 'true');
+    setInterval(() => { if (form.dataset.changed === 'true') saveDraft(true); }, interval);
+    window.addEventListener('beforeunload', () => {
+        if (form.dataset.changed === 'true') {
+            const payload = getDraftPayload();
+            navigator.sendBeacon(endpoint, new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+        }
+    });
+})();
+</script>
 <%- include('../../partials/footer') %>

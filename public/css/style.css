@@ -16,9 +16,17 @@ a:hover { text-decoration: underline; }
 .nav-menu li { padding: 10px 20px; }
 .nav-menu li a { color: var(--text-color); }
 .nav-menu li.active a, .nav-menu li a:hover { background-color: var(--text-color); color: var(--bg-color); }
+.site-wrapper { max-width: var(--blog-width); margin: 0 auto; }
 .container { display: flex; gap: 30px; max-width: var(--blog-width); margin: 0 auto; }
 .main-content { flex: 3; }
 .sidebar { flex: 1; }
+.draft-panel { border: 1px solid var(--border-color); padding: 10px; margin-bottom: 20px; }
+.draft-panel h3 { margin-top: 0; }
+.draft-list { list-style: none; padding: 0; margin: 0; }
+.draft-list li { margin-bottom: 8px; }
+.draft-list a { color: var(--highlight-color); }
+.draft-actions { display: inline-flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.draft-actions button { padding: 4px 10px; font-size: 0.9em; }
 .post-meta { font-size: 0.8em; margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px; }
 .code-block { background-color: #000; color: #0F0; padding: 10px; overflow-x: auto; border: 1px solid var(--border-color); }
 .tag-cloud a { display: inline-block; margin-right: 10px; border: 1px solid var(--border-color); padding: 2px 5px; font-size: 0.9em; }

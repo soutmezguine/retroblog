@@ -33,10 +33,12 @@ const pagesRouter = require('./routes/pages');
 const commentsRouter = require('./routes/comments');
 const settingsRouter = require('./routes/settings');
 const frontendRouter = require('./routes/frontend');
+const draftsRouter = require('./routes/drafts');
 
 app.use('/admin', adminRouter);
 app.use('/admin/posts', postsRouter);
 app.use('/admin/pages', pagesRouter);
+app.use('/admin/drafts', draftsRouter);
 app.use('/admin/comments', commentsRouter);
 app.use('/admin/settings', settingsRouter);
 app.use('/admin', taxonomyRouter);
