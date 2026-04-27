@@ -30,7 +30,8 @@ router.get('/post/:slug', (req, res) => {
 router.post('/post/:id/comment', (req, res) => {
     const { author, content } = req.body;
     db.prepare('INSERT INTO comments (post_id, author, content) VALUES (?, ?, ?)').run(req.params.id, author, content);
-    res.redirect('back');
+    const post = db.prepare('SELECT slug FROM posts WHERE id = ?').get(req.params.id);
+    res.redirect(post ? `/post/${post.slug}` : '/');
 });
 
 router.get('/category/:slug', (req, res) => {

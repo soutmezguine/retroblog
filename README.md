@@ -50,6 +50,7 @@ A simple 2-column blog with a 1980s/90s DOS-based aesthetic. Features ASCII bord
    ADMIN_USER=admin
    ADMIN_PASS=password123
    ```
+   If you do not create a `.env` file, the app uses defaults: `ADMIN_USER=admin` and `ADMIN_PASS=password123`.
 
 4. **Initialize Database**:
    The database and an initial admin user will be automatically created when you first start the server.
@@ -57,10 +58,6 @@ A simple 2-column blog with a 1980s/90s DOS-based aesthetic. Features ASCII bord
 5. **Start the server**:
    ```bash
    npm start
-   ```
-   Or for development:
-   ```bash
-   node index.js
    ```
 
 6. **Access the blog**:

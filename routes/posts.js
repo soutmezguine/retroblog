@@ -37,7 +37,8 @@ router.post('/create', isAuthenticated, upload.single('image'), (req, res) => {
 
 router.get('/edit/:id', isAuthenticated, (req, res) => {
     const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(req.params.id);
-    const postTags = db.prepare('SELECT tag_id FROM post_tags WHERE post_id = ?').all().map(t => t.tag_id);
+    if (!post) return res.status(404).send('Post not found');
+    const postTags = db.prepare('SELECT tag_id FROM post_tags WHERE post_id = ?').all(req.params.id).map(t => t.tag_id);
     res.render('admin/posts/edit', { ...getCommonData(), post, postTags, user: req.session.username });
 });
 
