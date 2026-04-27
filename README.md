@@ -16,13 +16,8 @@ A simple 2-column blog with a 1980s/90s DOS-based aesthetic. Features ASCII bord
   - Image upload support for posts.
   - Comment moderation (Approve/Deny/Delete).
   - Theme color customization.
-  - IP and Geo-blocking for spam prevention.
-
-## Tech Stack
-
-- **Server**: Node.js, Express.js
-- **Database**: SQLite (via `better-sqlite3`)
-- **Templates**: EJS
+- Blog width adjustment (e.g., 1200px, 100%, etc.).
+  - Tag management and inline tag creation in posts.
 - **Styling**: CSS (DOS aesthetic)
 - **Content**: Markdown-it
 - **Other**: Multer (uploads), Bcryptjs (auth), Geoip-lite (geo-blocking)
