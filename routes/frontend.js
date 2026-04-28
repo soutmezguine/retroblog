@@ -52,25 +52,64 @@ router.get('/tag/:slug', async (req, res) => {
     res.render('index', { ...commonData, posts, title: `TAG: ${tag.name.toUpperCase()}` });
 });
 
-router.get('/search', (req, res) => {
-    const query = req.query.q || '';
-    const posts = db.prepare("SELECT * FROM posts WHERE title LIKE ? OR content LIKE ? ORDER BY created_at DESC").all(`%${query}%`, `%${query}%`);
-    res.render('index', { ...getCommonData(), posts, title: `SEARCH RESULTS FOR: ${query.toUpperCase()}` });
+router.get('/search', async (req, res) => {
+    try {
+        const query = req.query.q || '';
+        const posts = db.prepare("SELECT * FROM posts WHERE title LIKE ? OR content LIKE ? ORDER BY created_at DESC").all(`%${query}%`, `%${query}%`);
+        const commonData = await getCommonData();
+        console.log('SEARCH route commonData keys', Object.keys(commonData));
+        res.render('index', { ...commonData, posts, title: `SEARCH RESULTS FOR: ${query.toUpperCase()}` }, (err, html) => {
+            if (err) {
+                console.error('SEARCH render error:', err);
+                return res.status(500).send('Internal Server Error');
+            }
+            res.send(html);
+        });
+    } catch (err) {
+        console.error('SEARCH route error:', err);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
-router.get('/archive/:year/:month', (req, res) => {
-    const { year, month } = req.params;
-    const posts = db.prepare("SELECT * FROM posts WHERE strftime('%Y', created_at) = ? AND strftime('%m', created_at) = ? ORDER BY created_at DESC").all(year, month);
-    const date = new Date(year, parseInt(month) - 1);
-    const monthName = date.toLocaleString('default', { month: 'long' }).toUpperCase();
-    res.render('index', { ...getCommonData(), posts, title: `ARCHIVE: ${monthName} ${year}` });
+router.get('/archive/:year/:month', async (req, res) => {
+    try {
+        const { year, month } = req.params;
+        const posts = db.prepare("SELECT * FROM posts WHERE strftime('%Y', created_at) = ? AND strftime('%m', created_at) = ? ORDER BY created_at DESC").all(year, month);
+        const date = new Date(year, parseInt(month) - 1);
+        const monthName = date.toLocaleString('default', { month: 'long' }).toUpperCase();
+        const commonData = await getCommonData();
+        console.log('ARCHIVE route commonData keys', Object.keys(commonData));
+        res.render('index', { ...commonData, posts, title: `ARCHIVE: ${monthName} ${year}` }, (err, html) => {
+            if (err) {
+                console.error('ARCHIVE render error:', err);
+                return res.status(500).send('Internal Server Error');
+            }
+            res.send(html);
+        });
+    } catch (err) {
+        console.error('ARCHIVE route error:', err);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
-router.get('/page/:slug', (req, res) => {
-    const page = db.prepare('SELECT * FROM pages WHERE slug = ?').get(req.params.slug);
-    if (!page) return res.status(404).send('Page not found');
-    page.renderedContent = md.render(page.content);
-    res.render('page', { ...getCommonData(), page });
+router.get('/page/:slug', async (req, res) => {
+    try {
+        const page = db.prepare('SELECT * FROM pages WHERE slug = ?').get(req.params.slug);
+        if (!page) return res.status(404).send('Page not found');
+        page.renderedContent = md.render(page.content);
+        const commonData = await getCommonData();
+        console.log('PAGE route commonData keys', Object.keys(commonData));
+        res.render('page', { ...commonData, page }, (err, html) => {
+            if (err) {
+                console.error('PAGE render error:', err);
+                return res.status(500).send('Internal Server Error');
+            }
+            res.send(html);
+        });
+    } catch (err) {
+        console.error('PAGE route error:', err);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 module.exports = router;

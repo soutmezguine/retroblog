@@ -6,11 +6,13 @@ require('dotenv').config();
 const db = require('./lib/db');
 const blockMiddleware = require('./lib/blocker');
 const { getCommonData } = require('./lib/data');
+const logger = require('./lib/logger');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 fs.mkdirSync(path.join(__dirname, 'public', 'uploads'), { recursive: true });
+fs.mkdirSync(path.join(__dirname, 'logs'), { recursive: true });
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -19,8 +21,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(blockMiddleware);
+
+// Structured request logging
 app.use((req, res, next) => {
-    console.log('REQ', req.method, req.path);
+    logger.logRequest(req.method, req.path, {
+        query: req.query,
+        ip: req.ip
+    });
     next();
 });
 
@@ -29,7 +36,7 @@ app.use(async (req, res, next) => {
         const commonData = await getCommonData();
         Object.assign(res.locals, commonData);
     } catch (err) {
-        console.error('Failed to load common data:', err);
+        logger.logError(err, { context: 'Failed to load common data' });
         res.locals.settings = res.locals.settings || {};
         res.locals.pages = res.locals.pages || [];
         res.locals.categories = res.locals.categories || [];
@@ -69,12 +76,16 @@ app.use('/rss', rssRouter);
 app.use('/', frontendRouter);
 
 app.use((err, req, res, next) => {
-    console.error('Unhandled server error:', err.stack || err);
+    logger.logError(err, {
+        method: req.method,
+        path: req.path,
+        ip: req.ip
+    });
     res.status(500).send('Internal Server Error');
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    logger.info(`Server started on port ${PORT}`);
 });
 
 module.exports = app;

@@ -6,6 +6,7 @@ const db = require('../lib/db');
 const { isAuthenticated } = require('./admin');
 const { getCommonData } = require('../lib/data');
 const { getCurrentTime } = require('../lib/time');
+const logger = require('../lib/logger');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => { cb(null, 'public/uploads/'); },
@@ -14,43 +15,61 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 router.get('/', isAuthenticated, async (req, res) => {
-    const posts = db.prepare('SELECT posts.*, categories.name as category_name FROM posts LEFT JOIN categories ON posts.category_id = categories.id ORDER BY created_at DESC').all();
-    const commonData = await getCommonData();
-    res.render('admin/posts/index', { ...commonData, posts, user: req.session.username });
+    try {
+        const posts = db.prepare('SELECT posts.*, categories.name as category_name FROM posts LEFT JOIN categories ON posts.category_id = categories.id ORDER BY created_at DESC').all();
+        const commonData = await getCommonData();
+        res.render('admin/posts/index', { ...commonData, posts, user: req.session.username });
+    } catch (err) {
+        logger.logError(err, { context: 'Admin posts list', user: req.session.username });
+        res.status(500).send('Error loading posts');
+    }
 });
 
-router.get('/create', isAuthenticated, (req, res) => {
-    const draftId = req.query.draft_id;
-    let draft = null;
-    if (draftId) {
-        draft = db.prepare('SELECT * FROM drafts WHERE id = ? AND type = ?').get(draftId, 'post');
+router.get('/create', isAuthenticated, async (req, res) => {
+    try {
+        const draftId = req.query.draft_id;
+        let draft = null;
+        if (draftId) {
+            draft = db.prepare('SELECT * FROM drafts WHERE id = ? AND type = ?').get(draftId, 'post');
+        }
+        const drafts = db.prepare('SELECT * FROM drafts WHERE type = ? ORDER BY updated_at DESC').all('post');
+        const draftTags = draft && draft.tag_ids ? draft.tag_ids.split(',').filter(Boolean) : [];
+        const commonData = await getCommonData();
+        res.render('admin/posts/create', { ...commonData, user: req.session.username, draft, drafts, draftTags });
+    } catch (err) {
+        logger.logError(err, { context: 'Admin post create page', user: req.session.username });
+        res.status(500).send('Error loading create page');
     }
-    const drafts = db.prepare('SELECT * FROM drafts WHERE type = ? ORDER BY updated_at DESC').all('post');
-    const draftTags = draft && draft.tag_ids ? draft.tag_ids.split(',').filter(Boolean) : [];
-    res.render('admin/posts/create', { ...getCommonData(), user: req.session.username, draft, drafts, draftTags });
 });
 
 router.post('/draft', isAuthenticated, (req, res) => {
-    const { draft_id, title, slug, content, summary, category_id, tags, new_tags } = req.body;
-    const tag_ids = tags ? (Array.isArray(tags) ? tags.join(',') : tags) : '';
-    const now = new Date().toISOString();
-    if (draft_id) {
-        db.prepare(`UPDATE drafts SET title = ?, slug = ?, content = ?, summary = ?, category_id = ?, tag_ids = ?, new_tags = ?, updated_at = ? WHERE id = ?`).run(
-            title || '',
-            slug || '',
-            content || '',
-            summary || '',
-            category_id || null,
-            tag_ids,
-            new_tags || '',
-            now,
-            draft_id
-        );
-        return res.json({ status: 'ok', id: draft_id });
+    try {
+        const { draft_id, title, slug, content, summary, category_id, tags, new_tags } = req.body;
+        const tag_ids = tags ? (Array.isArray(tags) ? tags.join(',') : tags) : '';
+        const now = new Date().toISOString();
+        if (draft_id) {
+            db.prepare(`UPDATE drafts SET title = ?, slug = ?, content = ?, summary = ?, category_id = ?, tag_ids = ?, new_tags = ?, updated_at = ? WHERE id = ?`).run(
+                title || '',
+                slug || '',
+                content || '',
+                summary || '',
+                category_id || null,
+                tag_ids,
+                new_tags || '',
+                now,
+                draft_id
+            );
+            logger.info('Draft updated', { draft_id, user: req.session.username });
+            return res.json({ status: 'ok', id: draft_id });
+        }
+        const info = db.prepare(`INSERT INTO drafts (type, title, slug, content, summary, category_id, tag_ids, new_tags, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+            .run('post', title || '', slug || '', content || '', summary || '', category_id || null, tag_ids, new_tags || '', now);
+        logger.info('Draft created', { draft_id: info.lastInsertRowid, user: req.session.username });
+        res.json({ status: 'ok', id: info.lastInsertRowid });
+    } catch (err) {
+        logger.logError(err, { context: 'Draft save', user: req.session.username });
+        res.status(500).json({ status: 'error', message: 'Failed to save draft' });
     }
-    const info = db.prepare(`INSERT INTO drafts (type, title, slug, content, summary, category_id, tag_ids, new_tags, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-        .run('post', title || '', slug || '', content || '', summary || '', category_id || null, tag_ids, new_tags || '', now);
-    res.json({ status: 'ok', id: info.lastInsertRowid });
 });
 
 router.post('/draft/delete/:id', isAuthenticated, (req, res) => {
