@@ -28,6 +28,9 @@
     "express-session": "^1.19.0",
     "geoip-lite": "^1.4.10",
     "markdown-it": "^14.1.1",
-    "multer": "^2.1.1"
+    "moment-timezone": "^0.6.2",
+    "multer": "^2.1.1",
+    "rss": "^1.2.2",
+    "sntp": "^3.0.2"
   }
 }

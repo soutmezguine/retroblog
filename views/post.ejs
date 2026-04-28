@@ -5,7 +5,7 @@
             <div class="dos-title">POST VIEW</div>
             <h1><%= post.title %></h1>
             <div class="post-meta">
-                DATE: <%= post.created_at %> |
+                DATE: <%= formatDate(post.created_at, settings) %> |
                 CATEGORY: <a href="/category/<%= post.category_slug %>"><%= post.category_name || 'NONE' %></a>
             </div>
             <div class="post-content"><%- post.renderedContent %></div>
@@ -18,7 +18,7 @@
             <div class="dos-title">COMMENTS</div>
             <% comments.forEach(comment => { %>
                 <div style="border-bottom: 1px dashed var(--border-color); padding: 10px 0;">
-                    <strong><%= comment.author %></strong> says:<br><p><%= comment.content %></p><small>On <%= comment.created_at %></small>
+                    <strong><%= comment.author %></strong> says:<br><p><%= comment.content %></p><small>On <%= formatDate(comment.created_at, settings) %></small>
                 </div>
             <% }); %>
             <div style="margin-top: 20px;">

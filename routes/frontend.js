@@ -5,12 +5,13 @@ const { getCommonData } = require('../lib/data');
 const MarkdownIt = require('markdown-it');
 const md = new MarkdownIt({ html: true, linkify: true, typographer: true });
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     const posts = db.prepare('SELECT * FROM posts ORDER BY created_at DESC').all();
-    res.render('index', { ...getCommonData(), posts, title: 'LATEST POSTS' });
+    const commonData = await getCommonData();
+    res.render('index', { ...commonData, posts, title: 'LATEST POSTS' });
 });
 
-router.get('/post/:slug', (req, res) => {
+router.get('/post/:slug', async (req, res) => {
     const post = db.prepare(`
         SELECT posts.*, categories.name as category_name, categories.slug as category_slug
         FROM posts
@@ -24,7 +25,8 @@ router.get('/post/:slug', (req, res) => {
     const comments = db.prepare("SELECT * FROM comments WHERE post_id = ? AND status = 'approved' ORDER BY created_at ASC").all(post.id);
     post.renderedContent = md.render(post.content);
 
-    res.render('post', { ...getCommonData(), post, postTags, comments });
+    const commonData = await getCommonData();
+    res.render('post', { ...commonData, post, postTags, comments });
 });
 
 router.post('/post/:id/comment', (req, res) => {
@@ -34,18 +36,20 @@ router.post('/post/:id/comment', (req, res) => {
     res.redirect(post ? `/post/${post.slug}` : '/');
 });
 
-router.get('/category/:slug', (req, res) => {
+router.get('/category/:slug', async (req, res) => {
     const category = db.prepare('SELECT * FROM categories WHERE slug = ?').get(req.params.slug);
     if (!category) return res.status(404).send('Category not found');
     const posts = db.prepare('SELECT * FROM posts WHERE category_id = ? ORDER BY created_at DESC').all(category.id);
-    res.render('index', { ...getCommonData(), posts, title: `CATEGORY: ${category.name.toUpperCase()}` });
+    const commonData = await getCommonData();
+    res.render('index', { ...commonData, posts, title: `CATEGORY: ${category.name.toUpperCase()}` });
 });
 
-router.get('/tag/:slug', (req, res) => {
+router.get('/tag/:slug', async (req, res) => {
     const tag = db.prepare('SELECT * FROM tags WHERE slug = ?').get(req.params.slug);
     if (!tag) return res.status(404).send('Tag not found');
     const posts = db.prepare("SELECT posts.* FROM posts JOIN post_tags ON posts.id = post_tags.post_id WHERE post_tags.tag_id = ? ORDER BY created_at DESC").all(tag.id);
-    res.render('index', { ...getCommonData(), posts, title: `TAG: ${tag.name.toUpperCase()}` });
+    const commonData = await getCommonData();
+    res.render('index', { ...commonData, posts, title: `TAG: ${tag.name.toUpperCase()}` });
 });
 
 router.get('/search', (req, res) => {

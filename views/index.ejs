@@ -7,7 +7,7 @@
             <% posts.forEach(post => { %>
                 <div style="margin-bottom: 40px; border-bottom: 2px solid var(--border-color); padding-bottom: 20px;">
                     <h2><a href="/post/<%= post.slug %>"><%= post.title %></a></h2>
-                    <div class="post-meta">DATE: <%= post.created_at %></div>
+                    <div class="post-meta">DATE: <%= formatDate(post.created_at, settings) %></div>
                     <p><%= post.summary %></p>
                     <a href="/post/<%= post.slug %>">[READ MORE]</a>
                 </div>

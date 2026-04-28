@@ -4,8 +4,9 @@ const db = require('../lib/db');
 const { isAuthenticated } = require('./admin');
 const { getCommonData } = require('../lib/data');
 
-router.get('/categories', isAuthenticated, (req, res) => {
-    res.render('admin/categories', { ...getCommonData(), user: req.session.username });
+router.get('/categories', isAuthenticated, async (req, res) => {
+    const commonData = await getCommonData();
+    res.render('admin/categories', { ...commonData, user: req.session.username });
 });
 
 router.post('/categories', isAuthenticated, (req, res) => {
@@ -19,8 +20,9 @@ router.post('/categories/delete/:id', isAuthenticated, (req, res) => {
     res.redirect('/admin/categories');
 });
 
-router.get('/tags', isAuthenticated, (req, res) => {
-    res.render('admin/tags', { ...getCommonData(), user: req.session.username });
+router.get('/tags', isAuthenticated, async (req, res) => {
+    const commonData = await getCommonData();
+    res.render('admin/tags', { ...commonData, user: req.session.username });
 });
 
 router.post('/tags', isAuthenticated, (req, res) => {

@@ -34,6 +34,7 @@ const commentsRouter = require('./routes/comments');
 const settingsRouter = require('./routes/settings');
 const frontendRouter = require('./routes/frontend');
 const draftsRouter = require('./routes/drafts');
+const rssRouter = require('./routes/rss');
 
 app.use('/admin', adminRouter);
 app.use('/admin/posts', postsRouter);
@@ -42,6 +43,7 @@ app.use('/admin/drafts', draftsRouter);
 app.use('/admin/comments', commentsRouter);
 app.use('/admin/settings', settingsRouter);
 app.use('/admin', taxonomyRouter);
+app.use('/rss', rssRouter);
 app.use('/', frontendRouter);
 
 app.listen(PORT, () => {

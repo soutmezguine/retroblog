@@ -4,9 +4,10 @@ const db = require('../lib/db');
 const { isAuthenticated } = require('./admin');
 const { getCommonData } = require('../lib/data');
 
-router.get('/', isAuthenticated, (req, res) => {
+router.get('/', isAuthenticated, async (req, res) => {
     const blocked_ips = db.prepare('SELECT * FROM blocked_ips').all();
-    res.render('admin/settings', { ...getCommonData(), blocked_ips, user: req.session.username });
+    const commonData = await getCommonData();
+    res.render('admin/settings', { ...commonData, blocked_ips, user: req.session.username });
 });
 
 router.post('/theme', isAuthenticated, (req, res) => {

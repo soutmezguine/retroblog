@@ -5,6 +5,7 @@ const path = require('path');
 const db = require('../lib/db');
 const { isAuthenticated } = require('./admin');
 const { getCommonData } = require('../lib/data');
+const { getCurrentTime } = require('../lib/time');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => { cb(null, 'public/uploads/'); },
@@ -12,9 +13,10 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-router.get('/', isAuthenticated, (req, res) => {
+router.get('/', isAuthenticated, async (req, res) => {
     const posts = db.prepare('SELECT posts.*, categories.name as category_name FROM posts LEFT JOIN categories ON posts.category_id = categories.id ORDER BY created_at DESC').all();
-    res.render('admin/posts/index', { ...getCommonData(), posts, user: req.session.username });
+    const commonData = await getCommonData();
+    res.render('admin/posts/index', { ...commonData, posts, user: req.session.username });
 });
 
 router.get('/create', isAuthenticated, (req, res) => {
@@ -56,11 +58,16 @@ router.post('/draft/delete/:id', isAuthenticated, (req, res) => {
     res.redirect('/admin/posts/create');
 });
 
-router.post('/create', isAuthenticated, upload.single('image'), (req, res) => {
+router.post('/create', isAuthenticated, upload.single('image'), async (req, res) => {
     const { title, slug, content, summary, category_id, tags, new_tags, draft_id } = req.body;
     let finalContent = content;
     if (req.file) finalContent = `![Image](/uploads/${req.file.filename})\n\n${content}`;
-    const info = db.prepare('INSERT INTO posts (title, slug, content, summary, category_id) VALUES (?, ?, ?, ?, ?)').run(title, slug, finalContent, summary, category_id || null);
+    const settings = db.prepare('SELECT key, value FROM settings').all().reduce((acc, curr) => {
+        acc[curr.key] = curr.value;
+        return acc;
+    }, {});
+    const createdAt = await getCurrentTime(settings);
+    const info = db.prepare('INSERT INTO posts (title, slug, content, summary, category_id, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(title, slug, finalContent, summary, category_id || null, createdAt.toISOString());
     const postId = info.lastInsertRowid;
     let tagList = [];
     if (tags) {
@@ -85,11 +92,12 @@ router.post('/create', isAuthenticated, upload.single('image'), (req, res) => {
     res.redirect('/admin/posts');
 });
 
-router.get('/edit/:id', isAuthenticated, (req, res) => {
+router.get('/edit/:id', isAuthenticated, async (req, res) => {
     const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(req.params.id);
     if (!post) return res.status(404).send('Post not found');
     const postTags = db.prepare('SELECT tag_id FROM post_tags WHERE post_id = ?').all(req.params.id).map(t => t.tag_id);
-    res.render('admin/posts/edit', { ...getCommonData(), post, postTags, user: req.session.username });
+    const commonData = await getCommonData();
+    res.render('admin/posts/edit', { ...commonData, post, postTags, user: req.session.username });
 });
 
 router.post('/edit/:id', isAuthenticated, upload.single('image'), (req, res) => {

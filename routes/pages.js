@@ -3,19 +3,22 @@ const router = express.Router();
 const db = require('../lib/db');
 const { isAuthenticated } = require('./admin');
 const { getCommonData } = require('../lib/data');
+const { getCurrentTime } = require('../lib/time');
 
-router.get('/', isAuthenticated, (req, res) => {
-    res.render('admin/pages/index', { ...getCommonData(), user: req.session.username });
+router.get('/', isAuthenticated, async (req, res) => {
+    const commonData = await getCommonData();
+    res.render('admin/pages/index', { ...commonData, user: req.session.username });
 });
 
-router.get('/create', isAuthenticated, (req, res) => {
+router.get('/create', isAuthenticated, async (req, res) => {
     const draftId = req.query.draft_id;
     let draft = null;
     if (draftId) {
         draft = db.prepare('SELECT * FROM drafts WHERE id = ? AND type = ?').get(draftId, 'page');
     }
     const drafts = db.prepare('SELECT * FROM drafts WHERE type = ? ORDER BY updated_at DESC').all('page');
-    res.render('admin/pages/create', { ...getCommonData(), user: req.session.username, draft, drafts });
+    const commonData = await getCommonData();
+    res.render('admin/pages/create', { ...commonData, user: req.session.username, draft, drafts });
 });
 
 router.post('/draft', isAuthenticated, (req, res) => {
@@ -42,18 +45,25 @@ router.post('/draft/delete/:id', isAuthenticated, (req, res) => {
     res.redirect('/admin/pages/create');
 });
 
-router.post('/create', isAuthenticated, (req, res) => {
+router.post('/create', isAuthenticated, async (req, res) => {
     const { title, slug, content, navigation_order, draft_id } = req.body;
-    db.prepare('INSERT INTO pages (title, slug, content, navigation_order) VALUES (?, ?, ?, ?)').run(title, slug, content, navigation_order || 0);
+    const settings = db.prepare('SELECT key, value FROM settings').all().reduce((acc, curr) => {
+        acc[curr.key] = curr.value;
+        return acc;
+    }, {});
+    const createdAt = await getCurrentTime(settings);
+    db.prepare('INSERT INTO pages (title, slug, content, navigation_order, created_at) VALUES (?, ?, ?, ?, ?)').run(title, slug, content, navigation_order || 0, createdAt.toISOString());
     if (draft_id) {
         db.prepare('DELETE FROM drafts WHERE id = ?').run(draft_id);
     }
     res.redirect('/admin/pages');
 });
 
-router.get('/edit/:id', isAuthenticated, (req, res) => {
+router.get('/edit/:id', isAuthenticated, async (req, res) => {
     const page = db.prepare('SELECT * FROM pages WHERE id = ?').get(req.params.id);
-    res.render('admin/pages/edit', { ...getCommonData(), page, user: req.session.username });
+    if (!page) return res.status(404).send('Page not found');
+    const commonData = await getCommonData();
+    res.render('admin/pages/edit', { ...commonData, page, user: req.session.username });
 });
 
 router.post('/edit/:id', isAuthenticated, (req, res) => {

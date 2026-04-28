@@ -12,7 +12,7 @@
         <ul class="draft-list">
             <% drafts.forEach(d => { %>
                 <li>
-                    <strong><%= d.title || 'Untitled draft' %></strong> — updated <%= new Date(d.updated_at).toLocaleString() %>
+                    <strong><%= d.title || 'Untitled draft' %></strong> — updated <%= formatDate(d.updated_at, settings) %>
                     <div class="draft-actions">
                         <a href="/admin/pages/create?draft_id=<%= d.id %>">Load</a>
                         <form action="/admin/pages/draft/delete/<%= d.id %>" method="POST" style="display:inline;">

@@ -24,7 +24,7 @@
                             <tr style="border-bottom: 1px solid var(--border-color);">
                                 <td style="padding: 8px;"><%= draft.type.toUpperCase() %></td>
                                 <td style="padding: 8px;"><%= draft.title || 'Untitled draft' %></td>
-                                <td style="padding: 8px;"><%= new Date(draft.updated_at).toLocaleString() %></td>
+                                <td style="padding: 8px;"><%= formatDate(draft.updated_at, settings) %></td>
                                 <td style="padding: 8px;">
                                     <% if (draft.type === 'post') { %>
                                         <a href="/admin/posts/create?draft_id=<%= draft.id %>">Load post draft</a>

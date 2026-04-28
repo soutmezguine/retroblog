@@ -4,9 +4,10 @@ const db = require('../lib/db');
 const { isAuthenticated } = require('./admin');
 const { getCommonData } = require('../lib/data');
 
-router.get('/', isAuthenticated, (req, res) => {
+router.get('/', isAuthenticated, async (req, res) => {
     const drafts = db.prepare('SELECT * FROM drafts ORDER BY updated_at DESC').all();
-    res.render('admin/drafts/index', { ...getCommonData(), user: req.session.username, drafts });
+    const commonData = await getCommonData();
+    res.render('admin/drafts/index', { ...commonData, user: req.session.username, drafts });
 });
 
 router.post('/publish/:id', isAuthenticated, (req, res) => {

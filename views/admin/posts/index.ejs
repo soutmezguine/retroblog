@@ -15,7 +15,7 @@
                 <tbody>
                     <% posts.forEach(post => { %>
                         <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 5px;"><%= post.title %></td><td style="padding: 5px;"><%= post.category_name || 'N/A' %></td><td style="padding: 5px;"><%= post.created_at %></td>
+                            <td style="padding: 5px;"><%= post.title %></td><td style="padding: 5px;"><%= post.category_name || 'N/A' %></td><td style="padding: 5px;"><%= formatDate(post.created_at, settings) %></td>
                             <td style="padding: 5px;">
                                 <a href="/admin/posts/edit/<%= post.id %>">[EDIT]</a>
                                 <form action="/admin/posts/delete/<%= post.id %>" method="POST" style="display: inline;"><button type="submit" style="color: red;">[DELETE]</button></form>
