@@ -12,12 +12,15 @@ A simple 2-column blog with a 1980s/90s DOS-based aesthetic. Features ASCII bord
   - Comments section for each post.
 - **Admin Section (/admin)**:
   - Authentication-protected dashboard.
-  - CRUD for Posts, Categories, Tags, and Static Pages.
+  - CRUD for Posts, Categories, Tags, Static Pages, and Drafts.
+  - Draft autosave and saved drafts for posts and pages.
   - Image upload support for posts.
   - Comment moderation (Approve/Deny/Delete).
-  - Theme color customization.
+  - Theme color customization and global settings.
 - Blog width adjustment (e.g., 1200px, 100%, etc.).
-  - Tag management and inline tag creation in posts.
+- Tag management and inline tag creation in posts.
+- RSS feed available at `/rss/feed` and linked in the site footer.
+- Timezone-aware date formatting with remote time sync fallback.
 - **Styling**: CSS (DOS aesthetic)
 - **Content**: Markdown-it
 - **Other**: Multer (uploads), Bcryptjs (auth), Geoip-lite (geo-blocking)
@@ -38,17 +41,17 @@ A simple 2-column blog with a 1980s/90s DOS-based aesthetic. Features ASCII bord
    ```
 
 3. **Configure Environment Variables**:
-   Create a `.env` file in the root directory:
+   Create a `.env` file in the root directory if you want to override defaults:
    ```env
    PORT=3000
    SESSION_SECRET=your_secret_here
    ADMIN_USER=admin
    ADMIN_PASS=password123
    ```
-   If you do not create a `.env` file, the app uses defaults: `ADMIN_USER=admin` and `ADMIN_PASS=password123`.
+   If you do not create a `.env` file, the app still starts with defaults: `ADMIN_USER=admin` and `ADMIN_PASS=password123`.
 
 4. **Initialize Database**:
-   The database and an initial admin user will be automatically created when you first start the server.
+   The SQLite database and an initial admin user will be automatically created when you first start the server.
 
 5. **Start the server**:
    ```bash
@@ -60,7 +63,7 @@ A simple 2-column blog with a 1980s/90s DOS-based aesthetic. Features ASCII bord
    - Admin Panel: `http://localhost:3000/admin` (Login with the credentials set in your `.env` file)
 
 ## Usage Tips
-
-- **Images**: When creating or editing a post, you can upload an image. It will be automatically prepended to the content in Markdown format.
+- **Drafts**: Use the post/page editor to save drafts and reload them later from the Admin Drafts page. Drafts also autosave periodically while you write.
+- **RSS Feed**: The site footer includes an RSS link at `/rss/feed` so external readers can subscribe to new posts.- **Images**: When creating or editing a post, you can upload an image. It will be automatically prepended to the content in Markdown format.
 - **Code Blocks**: Use triple backticks (\`\`\`) in the post editor to create DOS-style code blocks.
 - **Geo-blocking**: Country codes can be added to the `blocked_ips` table via the Admin Settings to block entire regions.
