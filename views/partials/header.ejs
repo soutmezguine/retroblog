@@ -22,10 +22,11 @@
             <div class="dos-title">MENU</div>
         <ul class="nav-menu">
             <li><a href="/">HOME</a></li>
-            <% pages.forEach(page => { %>
+            <% const pageList = Array.isArray(pages) ? pages : []; %>
+            <% pageList.forEach(page => { %>
                 <li><a href="/page/<%= page.slug %>"><%= page.title.toUpperCase() %></a></li>
             <% }); %>
-            <% if (!settings.hide_admin_link || settings.hide_admin_link === 'false') { %>
+            <% if (!settings || !settings.hide_admin_link || settings.hide_admin_link === 'false') { %>
                 <li><a href="/admin">ADMIN</a></li>
             <% } %>
         </ul>

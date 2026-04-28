@@ -5,6 +5,7 @@ const path = require('path');
 require('dotenv').config();
 const db = require('./lib/db');
 const blockMiddleware = require('./lib/blocker');
+const { getCommonData } = require('./lib/data');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +19,27 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(blockMiddleware);
+app.use((req, res, next) => {
+    console.log('REQ', req.method, req.path);
+    next();
+});
+
+app.use(async (req, res, next) => {
+    try {
+        const commonData = await getCommonData();
+        Object.assign(res.locals, commonData);
+    } catch (err) {
+        console.error('Failed to load common data:', err);
+        res.locals.settings = res.locals.settings || {};
+        res.locals.pages = res.locals.pages || [];
+        res.locals.categories = res.locals.categories || [];
+        res.locals.tags = res.locals.tags || [];
+        res.locals.archives = res.locals.archives || [];
+        res.locals.currentTime = res.locals.currentTime || new Date();
+        res.locals.formatDate = res.locals.formatDate || ((date) => date);
+    }
+    next();
+});
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'retro-secret',
@@ -45,6 +67,11 @@ app.use('/admin/settings', settingsRouter);
 app.use('/admin', taxonomyRouter);
 app.use('/rss', rssRouter);
 app.use('/', frontendRouter);
+
+app.use((err, req, res, next) => {
+    console.error('Unhandled server error:', err.stack || err);
+    res.status(500).send('Internal Server Error');
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
