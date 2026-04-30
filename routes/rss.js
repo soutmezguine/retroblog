@@ -36,7 +36,10 @@ router.get('/feed', (req, res) => {
     try {
         const host = req.get('host');
         const protocol = req.protocol;
-        const format = req.query.format || 'xml';
+        const requestedFormat = req.query.format;
+        const format = requestedFormat || 'html';
+        const acceptHeader = (req.get('accept') || '').toLowerCase();
+        logger.info('RSS request headers', { accept: acceptHeader, format });
 
         const feed = generateRSSFeed(host, protocol);
 
