@@ -37,7 +37,7 @@ router.get('/feed', (req, res) => {
         const host = req.get('host');
         const protocol = req.protocol;
         const requestedFormat = req.query.format;
-        const format = requestedFormat || 'html';
+        const format = requestedFormat || 'xml';
         const acceptHeader = (req.get('accept') || '').toLowerCase();
         logger.info('RSS request headers', { accept: acceptHeader, format });
 
@@ -49,7 +49,7 @@ router.get('/feed', (req, res) => {
             res.send(htmlContent);
         } else {
             res.set('Content-Type', 'application/rss+xml; charset=utf-8');
-            res.send(feed.xml());
+            res.send(feed.xml(true));
         }
     } catch (err) {
         logger.logError(err, { context: 'RSS feed request' });
