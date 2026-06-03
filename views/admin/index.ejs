@@ -9,8 +9,254 @@
     <div class="main-content">
         <div class="dos-box">
             <div class="dos-title">ADMIN DASHBOARD</div>
+            
+            <!-- Analytics Summary -->
+            <div class="dashboard-section">
+                <h3>ANALYTICS SUMMARY (Last 7 Days)</h3>
+                <div class="analytics-summary">
+                    <div class="stat-box">
+                        <div class="stat-label">TOTAL VISITORS</div>
+                        <div class="stat-value"><%= analytics.totalVisitors %></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">TOTAL PAGE VIEWS</div>
+                        <div class="stat-value"><%= analytics.totalPageViews %></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visitor Map -->
+            <div class="dashboard-section">
+                <h3>VISITOR GEO MAP (Last 7 Days)</h3>
+                <div id="geo-map" class="dos-box-inner" style="height: 400px; margin: 10px 0;">
+                    <canvas id="mapCanvas" style="width: 100%; height: 100%;"></canvas>
+                </div>
+                <div class="geo-stats">
+                    <% if (analytics.visitorGeo && analytics.visitorGeo.length > 0) { %>
+                        <table class="stats-table">
+                            <tr>
+                                <th>COUNTRY</th>
+                                <th>CITY</th>
+                                <th>VISITORS</th>
+                            </tr>
+                            <% analytics.visitorGeo.slice(0, 10).forEach(visitor => { %>
+                                <tr>
+                                    <td><%= visitor.country_code %></td>
+                                    <td><%= visitor.city || 'N/A' %></td>
+                                    <td><%= visitor.count %></td>
+                                </tr>
+                            <% }); %>
+                        </table>
+                    <% } else { %>
+                        <p>No visitor data available</p>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Top Pages -->
+            <div class="dashboard-section">
+                <h3>TOP 10 POPULAR PAGES</h3>
+                <div class="period-selector">
+                    <button class="period-btn active" data-period="day">DAY</button>
+                    <button class="period-btn" data-period="week">WEEK</button>
+                    <button class="period-btn" data-period="month">MONTH</button>
+                    <button class="period-btn" data-period="year">YEAR</button>
+                </div>
+                <div id="top-pages-container">
+                    <table class="stats-table">
+                        <tr>
+                            <th>PAGE</th>
+                            <th>UNIQUE VIEWS</th>
+                            <th>TOTAL VIEWS</th>
+                        </tr>
+                        <% if (analytics.topPages.day && analytics.topPages.day.length > 0) { %>
+                            <% analytics.topPages.day.forEach(page => { %>
+                                <tr>
+                                    <td><a href="/<%= page.type %>/<%= page.slug %>"><%= page.title %></a></td>
+                                    <td><%= page.unique_views %></td>
+                                    <td><%= page.total_views %></td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr><td colspan="3">No data available</td></tr>
+                        <% } %>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Database Backup & Restore -->
+            <div class="dashboard-section">
+                <h3>DATABASE BACKUP & RESTORE</h3>
+                <div class="backup-section">
+                    <button id="backupBtn" class="backup-action-btn">CREATE BACKUP</button>
+                    <p id="backupStatus" class="status-message"></p>
+                    
+                    <h4>AVAILABLE BACKUPS</h4>
+                    <div id="backups-list" class="backups-container">
+                        <% if (backups && backups.length > 0) { %>
+                            <% backups.forEach(backup => { %>
+                                <div class="backup-item">
+                                    <div class="backup-info">
+                                        <span class="backup-name"><%= backup.filename %></span>
+                                        <span class="backup-size">(<%= (backup.size / 1024).toFixed(2) %> KB)</span>
+                                        <span class="backup-date"><%= new Date(backup.created).toLocaleString() %></span>
+                                    </div>
+                                    <div class="backup-actions">
+                                        <button class="restore-btn" data-filename="<%= backup.filename %>">RESTORE</button>
+                                        <button class="delete-btn" data-filename="<%= backup.filename %>">DELETE</button>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <p>No backups available</p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
             <p>Welcome to the Retro Blog administration panel.</p>
         </div>
     </div>
 </div>
+
+<script>
+// Backup functionality
+document.getElementById('backupBtn').addEventListener('click', async function() {
+    const statusEl = document.getElementById('backupStatus');
+    this.disabled = true;
+    statusEl.textContent = 'Creating backup...';
+    
+    try {
+        const response = await fetch('/admin/backup', { method: 'POST' });
+        const result = await response.json();
+        if (result.success) {
+            statusEl.textContent = 'Backup created: ' + result.filename;
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            statusEl.textContent = 'Error: ' + (result.error || 'Unknown error');
+        }
+    } catch (err) {
+        statusEl.textContent = 'Error: ' + err.message;
+    } finally {
+        this.disabled = false;
+    }
+});
+
+// Delete backup
+document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        if (!confirm('Delete this backup?')) return;
+        const filename = this.dataset.filename;
+        try {
+            const response = await fetch('/admin/backups/delete/' + filename, { method: 'POST' });
+            const result = await response.json();
+            if (result.success) {
+                this.closest('.backup-item').remove();
+            } else {
+                alert('Error: ' + (result.error || 'Unknown error'));
+            }
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    });
+});
+
+// Restore backup
+document.querySelectorAll('.restore-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        if (!confirm('Restore this backup? Current data will be saved as a backup.')) return;
+        const filename = this.dataset.filename;
+        try {
+            const response = await fetch('/admin/backups/restore/' + filename, { method: 'POST' });
+            const result = await response.json();
+            if (result.success) {
+                alert('Backup restored successfully!');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                alert('Error: ' + (result.error || 'Unknown error'));
+            }
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    });
+});
+
+// Period selector for top pages
+document.querySelectorAll('.period-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        const period = this.dataset.period;
+        const periodData = <%= JSON.stringify(analytics.topPages) %>;
+        const pageData = periodData[period] || [];
+        
+        let html = '<table class="stats-table"><tr><th>PAGE</th><th>UNIQUE VIEWS</th><th>TOTAL VIEWS</th></tr>';
+        if (pageData.length > 0) {
+            pageData.forEach(page => {
+                html += `<tr><td><a href="/${page.type}/${page.slug}">${page.title}</a></td><td>${page.unique_views}</td><td>${page.total_views}</td></tr>`;
+            });
+        } else {
+            html += '<tr><td colspan="3">No data available</td></tr>';
+        }
+        html += '</table>';
+        
+        document.getElementById('top-pages-container').innerHTML = html;
+    });
+});
+
+// Simple geo map visualization
+function drawGeoMap() {
+    const canvas = document.getElementById('mapCanvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    
+    // Simple ASCII-art style world map representation
+    ctx.fillStyle = '#0000AA';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = '#AAAAAA';
+    ctx.font = '12px Courier New';
+    ctx.textAlign = 'center';
+    
+    const geoData = <%= JSON.stringify(analytics.visitorGeo) %>;
+    
+    // Normalize coordinates to canvas
+    const maxLat = 85;
+    const minLat = -85;
+    const maxLon = 180;
+    const minLon = -180;
+    
+    geoData.slice(0, 20).forEach(visitor => {
+        if (visitor.latitude && visitor.longitude) {
+            const x = ((visitor.longitude - minLon) / (maxLon - minLon)) * canvas.width;
+            const y = ((maxLat - visitor.latitude) / (maxLat - minLat)) * canvas.height;
+            
+            // Draw dot proportional to visitor count
+            const radius = Math.min(Math.max(visitor.count * 2, 3), 15);
+            ctx.fillStyle = '#FFFF55';
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw border
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+    });
+    
+    // Add legend
+    ctx.fillStyle = '#AAAAAA';
+    ctx.textAlign = 'left';
+    ctx.fillText('VISITOR LOCATIONS (dot size = visitor count)', 10, 20);
+}
+
+// Draw map on load
+window.addEventListener('load', drawGeoMap);
+</script>
 <%- include('../partials/footer') %>
+

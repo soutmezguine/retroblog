@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../lib/db');
 const { getCommonData } = require('../lib/data');
 const MarkdownIt = require('markdown-it');
+const { trackPageView } = require('../lib/analytics');
 const md = new MarkdownIt({ html: true, linkify: true, typographer: true });
 
 router.get('/', async (req, res) => {
@@ -20,6 +21,10 @@ router.get('/post/:slug', async (req, res) => {
     `).get(req.params.slug);
 
     if (!post) return res.status(404).send('Post not found');
+
+    // Track page view
+    const ip = req.ip || req.connection.remoteAddress || 'unknown';
+    trackPageView(ip, post.id, null);
 
     const postTags = db.prepare('SELECT tags.* FROM tags JOIN post_tags ON tags.id = post_tags.tag_id WHERE post_tags.post_id = ?').all(post.id);
     const comments = db.prepare("SELECT * FROM comments WHERE post_id = ? AND status = 'approved' ORDER BY created_at ASC").all(post.id);
@@ -69,6 +74,11 @@ router.get('/archive/:year/:month', (req, res) => {
 router.get('/page/:slug', (req, res) => {
     const page = db.prepare('SELECT * FROM pages WHERE slug = ?').get(req.params.slug);
     if (!page) return res.status(404).send('Page not found');
+    
+    // Track page view
+    const ip = req.ip || req.connection.remoteAddress || 'unknown';
+    trackPageView(ip, null, page.id);
+    
     page.renderedContent = md.render(page.content);
     res.render('page', { ...getCommonData(), page });
 });

@@ -6,6 +6,7 @@ require('dotenv').config();
 const db = require('./lib/db');
 const blockMiddleware = require('./lib/blocker');
 const { getCommonData } = require('./lib/data');
+const { trackVisitor } = require('./lib/analytics');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +20,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(blockMiddleware);
+app.use((req, res, next) => {
+    // Track visitor on first visit
+    const ip = req.ip || req.connection.remoteAddress || 'unknown';
+    trackVisitor(ip);
+    next();
+});
 app.use((req, res, next) => {
     console.log('REQ', req.method, req.path);
     next();

@@ -7,12 +7,54 @@
     <link rel="stylesheet" href="/css/style.css">
     <style>
         :root {
+            /* General Colors */
             --bg-color: <%= settings.bg_color || '#0000AA' %>;
             --text-color: <%= settings.text_color || '#AAAAAA' %>;
             --border-color: <%= settings.border_color || '#FFFFFF' %>;
             --highlight-color: <%= settings.highlight_color || '#FFFF55' %>;
             --shadow-color: <%= settings.shadow_color || '#000000' %>;
             --blog-width: <%= settings.blog_width || '1200px' %>;
+            
+            /* Menu Bar Colors */
+            --menu-bg-color: <%= settings.menu_bg_color || settings.bg_color || '#0000AA' %>;
+            --menu-text-color: <%= settings.menu_text_color || settings.text_color || '#AAAAAA' %>;
+            --menu-border-color: <%= settings.menu_border_color || settings.border_color || '#FFFFFF' %>;
+            --menu-highlight-color: <%= settings.menu_highlight_color || settings.highlight_color || '#FFFF55' %>;
+            --menu-hover-bg: <%= settings.menu_hover_bg || settings.text_color || '#AAAAAA' %>;
+            --menu-hover-text: <%= settings.menu_hover_text || settings.bg_color || '#0000AA' %>;
+            
+            /* Blog Post Colors */
+            --post-bg-color: <%= settings.post_bg_color || settings.bg_color || '#0000AA' %>;
+            --post-text-color: <%= settings.post_text_color || settings.text_color || '#AAAAAA' %>;
+            --post-border-color: <%= settings.post_border_color || settings.border_color || '#FFFFFF' %>;
+            --post-title-color: <%= settings.post_title_color || settings.highlight_color || '#FFFF55' %>;
+            --post-meta-color: <%= settings.post_meta_color || settings.text_color || '#AAAAAA' %>;
+            --post-link-color: <%= settings.post_link_color || settings.highlight_color || '#FFFF55' %>;
+            
+            /* Footer Colors */
+            --footer-bg-color: <%= settings.footer_bg_color || settings.bg_color || '#0000AA' %>;
+            --footer-text-color: <%= settings.footer_text_color || settings.text_color || '#AAAAAA' %>;
+            --footer-border-color: <%= settings.footer_border_color || settings.border_color || '#FFFFFF' %>;
+            --footer-link-color: <%= settings.footer_link_color || settings.highlight_color || '#FFFF55' %>;
+            
+            /* Sidebar Colors */
+            --sidebar-bg-color: <%= settings.sidebar_bg_color || settings.bg_color || '#0000AA' %>;
+            --sidebar-text-color: <%= settings.sidebar_text_color || settings.text_color || '#AAAAAA' %>;
+            --sidebar-border-color: <%= settings.sidebar_border_color || settings.border_color || '#FFFFFF' %>;
+            --sidebar-title-color: <%= settings.sidebar_title_color || settings.highlight_color || '#FFFF55' %>;
+            --sidebar-link-color: <%= settings.sidebar_link_color || settings.highlight_color || '#FFFF55' %>;
+            
+            /* Admin Section Colors */
+            --admin-bg-color: <%= settings.admin_bg_color || settings.text_color || '#AAAAAA' %>;
+            --admin-text-color: <%= settings.admin_text_color || settings.bg_color || '#0000AA' %>;
+            --admin-border-color: <%= settings.admin_border_color || settings.border_color || '#FFFFFF' %>;
+            --admin-link-color: <%= settings.admin_link_color || settings.bg_color || '#0000AA' %>;
+            --admin-box-bg: <%= settings.admin_box_bg || settings.bg_color || '#0000AA' %>;
+            --admin-box-text: <%= settings.admin_box_text || settings.text_color || '#AAAAAA' %>;
+            --admin-box-border: <%= settings.admin_box_border || settings.border_color || '#FFFFFF' %>;
+            --admin-button-bg: <%= settings.admin_button_bg || settings.text_color || '#AAAAAA' %>;
+            --admin-button-text: <%= settings.admin_button_text || settings.bg_color || '#0000AA' %>;
+            --admin-button-hover-bg: <%= settings.admin_button_hover_bg || settings.highlight_color || '#FFFF55' %>;
         }
     </style>
 </head>

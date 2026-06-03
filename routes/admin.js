@@ -3,6 +3,8 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../lib/db');
 const { getCommonData } = require('../lib/data');
+const { backupDatabase, getBackups, deleteBackup, restoreBackup } = require('../lib/backup');
+const { getDashboardAnalytics } = require('../lib/analytics');
 
 const isAuthenticated = (req, res, next) => {
     if (req.session.userId) return next();
@@ -35,7 +37,30 @@ router.get('/logout', (req, res) => {
 
 router.get('/', isAuthenticated, async (req, res) => {
     const commonData = await getCommonData();
-    res.render('admin/index', { ...commonData, user: req.session.username });
+    const analytics = getDashboardAnalytics();
+    const backups = getBackups();
+    res.render('admin/index', { ...commonData, user: req.session.username, analytics, backups });
+});
+
+// Backup routes
+router.post('/backup', isAuthenticated, (req, res) => {
+    const result = backupDatabase();
+    res.json(result);
+});
+
+router.get('/backups', isAuthenticated, (req, res) => {
+    const backups = getBackups();
+    res.json(backups);
+});
+
+router.post('/backups/delete/:filename', isAuthenticated, (req, res) => {
+    const result = deleteBackup(req.params.filename);
+    res.json(result);
+});
+
+router.post('/backups/restore/:filename', isAuthenticated, (req, res) => {
+    const result = restoreBackup(req.params.filename);
+    res.json(result);
 });
 
 module.exports = { router, isAuthenticated };
